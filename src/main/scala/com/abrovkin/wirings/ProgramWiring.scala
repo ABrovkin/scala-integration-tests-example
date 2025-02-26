@@ -4,6 +4,7 @@ import java.time.Duration
 
 import cats.effect.{Async, Resource}
 import com.abrovkin.cache.CardsCache
+import com.abrovkin.config.ServiceConfig
 import com.abrovkin.external.CardsExternalService
 import com.abrovkin.service.{CardMaskingImpl, CardService}
 import com.abrovkin.http.Controller
@@ -16,10 +17,11 @@ import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.server.ServerBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import pureconfig.ConfigSource
 
 object ProgramWiring:
 
-  def redis[F[_]: Async](redisUri: String): Resource[F, RedisCommands[F, String, String]] =
+  def redis[F[_]: Async](redisUri: String, timeout: Int): Resource[F, RedisCommands[F, String, String]] =
     given Logger[F] = Slf4jLogger.getLogger[F]
 
     val opts = ClientOptions
@@ -27,7 +29,7 @@ object ProgramWiring:
       .timeoutOptions(
         TimeoutOptions
           .builder()
-          .fixedTimeout(Duration.ofMillis(200))
+          .fixedTimeout(Duration.ofMillis(timeout))
           .build()
       )
       .build()
@@ -37,25 +39,24 @@ object ProgramWiring:
     for
       httpClient     <- BlazeClientBuilder[F].resource
       externalService = CardsExternalService(httpClient, externalServiceUri)
-      redisCommands  <- redis(redisUri)
+      redisCommands  <- redis(redisUri, 200)
       cache           = CardsCache(redisCommands)
       service         = CardService(externalService, cache, CardMaskingImpl)
       controller      = Controller(service)
     yield service
 
-  def buildApp[F[_]: Async](
-      externalServiceUri: String,
-      redisUri: String,
-      httpHost: String,
-      httpPort: Int
-  ): Resource[F, ServerBuilder[F]] =
+  def buildApp[F[_]: Async](): Resource[F, ServerBuilder[F]] =
     for
       httpClient     <- BlazeClientBuilder[F].resource
-      externalService = CardsExternalService(httpClient, externalServiceUri)
-      redisCommands  <- redis(redisUri)
+      config          = ConfigSource.default.loadOrThrow[ServiceConfig]
+      externalService = CardsExternalService(httpClient, config.externalServiceConfig.externalServiceUri)
+      redisUri        = s"redis://${config.redisConfig.redisHost}:${config.redisConfig.redisPort}"
+      redisCommands  <- redis(redisUri, config.redisConfig.timeout)
       cache           = CardsCache(redisCommands)
       service         = CardService(externalService, cache, CardMaskingImpl)
       controller      = Controller(service)
       httpApp         = controller.mkCardsController
-      serverBuilder   = BlazeServerBuilder[F].bindHttp(httpPort, httpHost).withHttpApp(httpApp)
+      serverBuilder   = BlazeServerBuilder[F]
+                          .bindHttp(config.httpPort, config.httpHost)
+                          .withHttpApp(httpApp)
     yield serverBuilder

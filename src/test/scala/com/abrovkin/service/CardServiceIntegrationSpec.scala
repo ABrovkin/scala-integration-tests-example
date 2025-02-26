@@ -82,7 +82,7 @@ class CardServiceIntegrationSpec extends AsyncFlatSpec with Matchers with TestCo
       f: (MockServerContainer, RedisCommands[IO, String, String], CardService[IO]) => IO[Unit]
   ): IO[Unit] =
     withContainers { case mockServer and redis and _ =>
-      val redisResource   = ProgramWiring.redis[IO](redis.redisUri)
+      val redisResource   = ProgramWiring.redis[IO](redis.redisUri, 200)
       val serviceResource = ProgramWiring.wire[IO](mockServer.endpoint, redis.redisUri)
       (redisResource product serviceResource).use { case (redis, service) =>
         f(mockServer, redis, service)
