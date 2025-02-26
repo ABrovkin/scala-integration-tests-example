@@ -1,4 +1,4 @@
-package com.abrovkin.service
+package com.abrovkin.http
 
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
@@ -11,22 +11,22 @@ import com.abrovkin.testdata.CardsTestData.*
 import com.abrovkin.utils.MockServerClientWrapper
 import com.abrovkin.wirings.ProgramWiring
 import com.dimafeng.testcontainers.lifecycle.and
-import com.dimafeng.testcontainers.{MockServerContainer, RedisContainer, ToxiproxyContainer}
 import com.dimafeng.testcontainers.scalatest.TestContainersForAll
+import com.dimafeng.testcontainers.{MockServerContainer, RedisContainer, ToxiproxyContainer}
 import dev.profunktor.redis4cats.RedisCommands
 import io.circe.parser.decode
 import io.circe.syntax.*
 import org.http4s.*
+import org.http4s.Method.*
 import org.http4s.client.Client
 import org.http4s.client.dsl.io.*
-import org.http4s.Method.*
-import org.http4s.syntax.all.*
 import org.http4s.implicits.*
+import org.http4s.syntax.all.*
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.Network
 
-class CardServiceIntegrationSpec extends AsyncFlatSpec with Matchers with TestContainersForAll with AsyncIOSpec:
+class CardControllerSpec extends AsyncFlatSpec with Matchers with TestContainersForAll with AsyncIOSpec:
 
   override type Containers = MockServerContainer and RedisContainer and ToxiproxyContainer
 
