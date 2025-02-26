@@ -33,17 +33,17 @@ class CardServiceIntegrationSpec extends AsyncFlatSpec with Matchers with TestCo
   "GET /api/v1/cards" should "return cards from external service and put them to cache for fallback" in
     testEnvironment { (mockServer, redis, client) =>
       for
-        _           <- MockServerClientWrapper.mockGetCards(
-                         mockServer,
-                         userId,
-                         cards.asJson.noSpaces
-                       )
-        
+        _ <- MockServerClientWrapper.mockGetCards(
+               mockServer,
+               userId,
+               cards.asJson.noSpaces
+             )
+
         request      = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$userId"))
         responseRaw <- client.expect[String](request)
         response     = decode[List[Card]](responseRaw).getOrElse(List.empty)
         _            = response shouldBe cardsResponse
-        
+
         cachedCards <- redis.get(userId)
         _            = cachedCards shouldBe Some(cardsResponse.asJson.noSpaces)
       yield ()
@@ -52,14 +52,14 @@ class CardServiceIntegrationSpec extends AsyncFlatSpec with Matchers with TestCo
   it should "return cards from fallback cache if external service is failed" in
     testEnvironment { (mockServer, redis, client) =>
       for
-        _           <- redis.set(anotherUserId, anotherCardsResponse.asJson.noSpaces)
-        _           <- MockServerClientWrapper.mockFailGetCards(mockServer, anotherUserId)
-        
+        _ <- redis.set(anotherUserId, anotherCardsResponse.asJson.noSpaces)
+        _ <- MockServerClientWrapper.mockFailGetCards(mockServer, anotherUserId)
+
         request      = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$anotherUserId"))
         responseRaw <- client.expect[String](request)
         response     = decode[List[Card]](responseRaw).getOrElse(List.empty)
         _            = response shouldBe anotherCardsResponse
-        
+
         cachedCards <- redis.get(anotherUserId)
         _            = cachedCards shouldBe Some(anotherCardsResponse.asJson.noSpaces)
       yield ()
