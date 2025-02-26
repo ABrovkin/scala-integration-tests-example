@@ -6,7 +6,7 @@ val redis4catsVersion           = "1.7.0"
 val circeVersion                = "0.14.10"
 val scalaTestVersion            = "3.2.18"
 val scalaMockVersion            = "6.0.0"
-val http4sVersion               = "0.23.16"
+val http4sVersion               = "0.23.17"
 val testcontainersVersion       = "0.41.4"
 val catsEffectTestingVersion    = "1.5.0"
 val mockServerJavaClientVersion = "5.15.0"
@@ -19,7 +19,10 @@ libraryDependencies ++= List(
   "io.circe"       %% "circe-core"                      % circeVersion,
   "io.circe"       %% "circe-generic"                   % circeVersion,
   "io.circe"       %% "circe-parser"                    % circeVersion,
+  "org.http4s"     %% "http4s-dsl"                      % http4sVersion,
+  "org.http4s"     %% "http4s-circe"                    % http4sVersion,
   "org.http4s"     %% "http4s-blaze-client"             % http4sVersion,
+  "org.http4s"     %% "http4s-blaze-server"             % http4sVersion,
   "org.scalatest"  %% "scalatest"                       % scalaTestVersion            % Test,
   "org.scalamock"  %% "scalamock"                       % scalaMockVersion            % Test,
   "com.dimafeng"   %% "testcontainers-scala-scalatest"  % testcontainersVersion       % Test,
