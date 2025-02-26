@@ -6,7 +6,7 @@ import cats.syntax.all.*
 import com.abrovkin.cache.RedisConfig
 import com.abrovkin.config.ServiceConfig
 import com.abrovkin.external.ExternalServiceConfig
-import com.abrovkin.model.Card
+import com.abrovkin.model.{Card, UserId}
 import com.abrovkin.testdata.CardsTestData.*
 import com.abrovkin.utils.MockServerClientWrapper
 import com.abrovkin.wirings.ProgramWiring
@@ -38,14 +38,8 @@ class CardControllerSpec extends AsyncFlatSpec with Matchers with TestContainers
                userId,
                cards.asJson.noSpaces
              )
-
-        request      = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$userId"))
-        responseRaw <- client.expect[String](request)
-        response     = decode[List[Card]](responseRaw).getOrElse(List.empty)
-        _            = response shouldBe cardsResponse
-
-        cachedCards <- redis.get(userId)
-        _            = cachedCards shouldBe Some(cardsResponse.asJson.noSpaces)
+        _ <- assertCardsRequest(client, userId, cardsResponse)
+        _ <- assertCachedResponse(redis, userId, cardsResponse)
       yield ()
     }
 
@@ -54,42 +48,40 @@ class CardControllerSpec extends AsyncFlatSpec with Matchers with TestContainers
       for
         _ <- redis.set(anotherUserId, anotherCardsResponse.asJson.noSpaces)
         _ <- MockServerClientWrapper.mockFailGetCards(mockServer, anotherUserId)
-
-        request      = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$anotherUserId"))
-        responseRaw <- client.expect[String](request)
-        response     = decode[List[Card]](responseRaw).getOrElse(List.empty)
-        _            = response shouldBe anotherCardsResponse
-
-        cachedCards <- redis.get(anotherUserId)
-        _            = cachedCards shouldBe Some(anotherCardsResponse.asJson.noSpaces)
+        _ <- assertCardsRequest(client, anotherUserId, anotherCardsResponse)
+        _ <- assertCachedResponse(redis, anotherUserId, anotherCardsResponse)
       yield ()
     }
 
   it should "return cards from external service or empty list if is fails and skip Redis fails" in
     testEnvironmentWithProxy { (mockServer, redisProxy, client) =>
       for
+        _ <- IO(redisProxy.setConnectionCut(true))
+
         _ <- MockServerClientWrapper.mockGetCards(
                mockServer,
                userId,
                cards.asJson.noSpaces
              )
-        _ <- IO(redisProxy.setConnectionCut(true))
-
-        request      = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$userId"))
-        responseRaw <- client.expect[String](request)
-        response     = decode[List[Card]](responseRaw).getOrElse(List.empty)
-        _            = response shouldBe cardsResponse
+        _ <- assertCardsRequest(client, userId, cardsResponse)
 
         _ <- MockServerClientWrapper.mockFailGetCards(mockServer, anotherUserId)
-
-        request      = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$anotherUserId"))
-        responseRaw <- client.expect[String](request)
-        response     = decode[List[Card]](responseRaw).getOrElse(List.empty)
-        _            = response shouldBe List.empty
+        _ <- assertCardsRequest(client, anotherUserId, List.empty)
 
         _ <- IO(redisProxy.setConnectionCut(false))
       yield ()
     }
+
+  def assertCardsRequest(client: Client[IO], userId: UserId, expectedResult: List[Card]): IO[Unit] =
+    val request = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$userId"))
+    client.expect[String](request).map(_ shouldBe expectedResult.asJson.noSpaces)
+
+  def assertCachedResponse(
+      redis: RedisCommands[IO, String, String],
+      userId: UserId,
+      expectedResult: List[Card]
+  ): IO[Unit] =
+    redis.get(userId).map(_ shouldBe Some(expectedResult.asJson.noSpaces))
 
   override def startContainers(): Containers =
     val mockServer = MockServerContainer.Def("5.15.0").start()
