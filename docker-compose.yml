@@ -1,0 +1,22 @@
+version: "3.9"
+networks:
+  default:
+    driver: bridge
+
+services:
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  application:
+    image: scala-integration-tests:latest
+    environment:
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      EXTERNAL_SERVICE_URL: "http://localhost:8081"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis

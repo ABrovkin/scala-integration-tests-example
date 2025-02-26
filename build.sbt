@@ -35,3 +35,9 @@ libraryDependencies ++= List(
   "org.typelevel"         %% "cats-effect-testing-scalatest"   % catsEffectTestingVersion    % Test,
   "org.mock-server"        % "mockserver-client-java"          % mockServerJavaClientVersion % Test
 )
+
+Docker / packageName := "scala-integration-tests"
+Docker / dockerExposedPorts ++= Seq(8080)
+Docker / version     := "latest"
+
+enablePlugins(JavaAppPackaging)
