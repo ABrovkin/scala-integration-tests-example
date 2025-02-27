@@ -24,7 +24,7 @@ object CardsAppClient:
       Uri.unsafeFromString(s"http://localhost:$port${getCardsRelativePath(userId)}")
 
     override def getCards(userId: String): F[String] =
-      
+
       // Self-made crutchy retry policy to avoid flaky tests because of long docker start
       def retries(attempts: Int): F[String] =
         client
