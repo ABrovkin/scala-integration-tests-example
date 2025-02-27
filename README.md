@@ -17,5 +17,5 @@ docker compose up
 Запуск API тестов после сборки
 
 ```
-sbt cards-app-tests / test
+sbt cards-app-tests/test
 ```
