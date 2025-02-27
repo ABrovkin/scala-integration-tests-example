@@ -5,11 +5,17 @@
 Локальная сборка:
 
 ```
-sbt clean compile test docker:publishLocal
+sbt clean compile cards-app / test docker:publishLocal
 ```
 
 Локальный запуск после сборки:
 
 ```
 docker compose up
+```
+
+Запуск API тестов после сборки
+
+```
+sbt cards-app-tests / test
 ```
