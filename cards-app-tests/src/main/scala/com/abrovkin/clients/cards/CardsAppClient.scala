@@ -25,14 +25,21 @@ object CardsAppClient:
 
     override def getCards(userId: String): F[String] =
 
-      // Self-made crutchy retry policy to avoid flaky tests because of long docker start
+      // Самопальный ad-hoc retry сделан для того, чтобы обойти проблему долгого старта
+      // Контейнеры в тестах стартуют достаточно долго
+      // Из-за этого при запуске тестов несколько первых раз возникает SocketException
+      // Простой retry позволяет снизить хрупкость тестов
+      // По-хорошему это должно быть реализовано через стратегию ожидания старта контейнеров
       def retries(attempts: Int): F[String] =
         client
           .expect[String](getCardsUri(userId))
           .handleErrorWith {
             case _: SocketException if attempts > 0 =>
-              Temporal[F].sleep(1.second).flatMap(_ => retries(attempts - 1))
-            case e                                  =>
+              Temporal[F]
+                .sleep(1.second)
+                .flatMap(_ => retries(attempts - 1))
+
+            case e =>
               MonadThrow[F].raiseError(e)
           }
 
