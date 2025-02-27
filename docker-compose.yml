@@ -6,19 +6,16 @@ networks:
 services:
   redis:
     image: redis
-    container_name: redis
     ports:
       - "6379:6379"
 
   mockserver:
     image: mockserver/mockserver
-    container_name: mockserver
     ports:
       - "8082:1080"
 
   toxiproxy:
     image: shopify/toxiproxy
-    container_name: toxiproxy
     depends_on:
       - redis
     ports:

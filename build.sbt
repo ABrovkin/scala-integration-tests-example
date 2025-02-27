@@ -8,6 +8,7 @@ val http4sVersion               = "0.23.17"
 val testcontainersVersion       = "0.41.4"
 val catsEffectTestingVersion    = "1.5.0"
 val mockServerJavaClientVersion = "5.15.0"
+val toxiproxyJavaClientVersion  = "2.1.7"
 val pureConfigVersion           = "0.17.8"
 
 lazy val root = (project in file("."))
@@ -58,23 +59,21 @@ lazy val `cards-app-tests` = (project in file("cards-app-tests"))
     publish / skip      := true,
     publishLocal / skip := true,
     libraryDependencies ++= List(
-      "org.typelevel"         %% "cats-core"                       % catsVersion,
-      "org.typelevel"         %% "cats-effect"                     % catsEffectVersion,
-      "dev.profunktor"        %% "redis4cats-effects"              % redis4catsVersion,
-      "dev.profunktor"        %% "redis4cats-log4cats"             % redis4catsVersion,
-      "io.circe"              %% "circe-core"                      % circeVersion,
-      "io.circe"              %% "circe-generic"                   % circeVersion,
-      "io.circe"              %% "circe-parser"                    % circeVersion,
-      "org.http4s"            %% "http4s-dsl"                      % http4sVersion,
-      "org.http4s"            %% "http4s-circe"                    % http4sVersion,
-      "org.http4s"            %% "http4s-blaze-client"             % http4sVersion,
-      "org.scalatest"         %% "scalatest"                       % scalaTestVersion            % Test,
-      "com.dimafeng"          %% "testcontainers-scala-scalatest"  % testcontainersVersion       % Test,
-      "com.dimafeng"          %% "testcontainers-scala-redis"      % testcontainersVersion       % Test,
-      "com.dimafeng"          %% "testcontainers-scala-mockserver" % testcontainersVersion       % Test,
-      "com.dimafeng"          %% "testcontainers-scala-toxiproxy"  % testcontainersVersion       % Test,
-      "org.typelevel"         %% "cats-effect-testing-scalatest"   % catsEffectTestingVersion    % Test,
-      "org.mock-server"        % "mockserver-client-java"          % mockServerJavaClientVersion % Test
+      "org.typelevel"       %% "cats-core"                      % catsVersion,
+      "org.typelevel"       %% "cats-effect"                    % catsEffectVersion,
+      "dev.profunktor"      %% "redis4cats-effects"             % redis4catsVersion,
+      "dev.profunktor"      %% "redis4cats-log4cats"            % redis4catsVersion,
+      "io.circe"            %% "circe-core"                     % circeVersion,
+      "io.circe"            %% "circe-generic"                  % circeVersion,
+      "io.circe"            %% "circe-parser"                   % circeVersion,
+      "org.http4s"          %% "http4s-dsl"                     % http4sVersion,
+      "org.http4s"          %% "http4s-circe"                   % http4sVersion,
+      "org.http4s"          %% "http4s-blaze-client"            % http4sVersion,
+      "org.mock-server"      % "mockserver-client-java"         % mockServerJavaClientVersion,
+      "eu.rekawek.toxiproxy" % "toxiproxy-java"                 % toxiproxyJavaClientVersion,
+      "org.scalatest"       %% "scalatest"                      % scalaTestVersion         % Test,
+      "com.dimafeng"        %% "testcontainers-scala-scalatest" % testcontainersVersion    % Test,
+      "org.typelevel"       %% "cats-effect-testing-scalatest"  % catsEffectTestingVersion % Test,
     )
   )
   .settings(Defaults.itSettings)
