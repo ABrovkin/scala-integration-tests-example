@@ -23,7 +23,7 @@ jobs:
       - uses: sbt/setup-sbt@v1
 
       - name: Build and run tests
-        run: sbt clean compile cards-app / test cards-app / docker:publishLocal cards-app-tests / test
+        run: sbt clean compile "cards-app" / test "cards-app" / docker:publishLocal "cards-app-tests" / test
   lint:
     runs-on: ubuntu-latest
     steps:
