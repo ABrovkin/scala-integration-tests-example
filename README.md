@@ -19,3 +19,7 @@ docker compose up
 ```
 sbt cards-app-tests/test
 ```
+
+Интеграционные тесты с мокированным окружением контроллера находятся [тут](cards-app/src/test/scala/com/abrovkin/http/CardControllerSpec.scala)
+
+API-тесты, запускаемые против приложения в мокированном окружении, находятся [тут](cards-app-tests/src/test/scala/com/abrovkin/CardsServiceSpec.scala)

@@ -1,4 +1,4 @@
-package com.antonbrovkin
+package com.abrovkin
 
 import java.io.File
 import cats.syntax.*
@@ -14,6 +14,7 @@ import dev.profunktor.redis4cats.log4cats.*
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.Client
+import org.scalatest.ParallelTestExecution
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.Logger
@@ -60,13 +61,9 @@ class CardsServiceSpec extends AsyncFlatSpec with Matchers with TestContainersFo
   override type Containers = DockerComposeContainer
 
   override def startContainers(): Containers =
-    val container = DockerComposeContainer
+    DockerComposeContainer
       .Def(composeFiles = File("docker-compose.yml"))
       .start()
-
-    // A crutch to wait for containers to start
-    Thread.sleep(3000)
-    container
 
   def testEnvironment(
       f: (

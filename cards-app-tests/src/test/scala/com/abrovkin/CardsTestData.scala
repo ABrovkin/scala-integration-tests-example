@@ -1,4 +1,4 @@
-package com.antonbrovkin
+package com.abrovkin
 
 import io.circe.Json
 import io.circe.syntax.*
