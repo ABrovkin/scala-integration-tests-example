@@ -4,8 +4,8 @@ import cats.Functor
 import cats.syntax.all.*
 import com.abrovkin.model.{Card, UserId}
 import io.circe.parser.*
-import org.http4s.{EntityDecoder, Uri}
 import org.http4s.client.Client
+import org.http4s.{EntityDecoder, Uri}
 
 trait CardsExternalService[F[_]]:
   def getUserCards(userId: UserId): F[List[Card]]

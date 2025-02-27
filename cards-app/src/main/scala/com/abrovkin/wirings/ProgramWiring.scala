@@ -1,16 +1,15 @@
 package com.abrovkin.wirings
 
-import java.time.Duration
-import cats.syntax.all.*
 import cats.effect.{Async, Resource}
+import cats.syntax.all.*
 import com.abrovkin.cache.CardsCache
 import com.abrovkin.config.ServiceConfig
 import com.abrovkin.external.CardsExternalService
-import com.abrovkin.service.{CardMaskingImpl, CardService}
 import com.abrovkin.http.CardsController
+import com.abrovkin.service.{CardMaskingImpl, CardService}
 import dev.profunktor.redis4cats.data.RedisCodec
-import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.log4cats.*
+import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import io.lettuce.core.{ClientOptions, TimeoutOptions}
 import org.http4s.HttpRoutes
 import org.http4s.blaze.client.BlazeClientBuilder
@@ -19,6 +18,8 @@ import org.http4s.server.ServerBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import pureconfig.ConfigSource
+
+import java.time.Duration
 
 object ProgramWiring:
 

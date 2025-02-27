@@ -4,7 +4,7 @@ import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import com.abrovkin.cache.CardsCache
 import com.abrovkin.external.CardsExternalService
-import com.abrovkin.testdata.CardsTestData._
+import com.abrovkin.testdata.CardsTestData.*
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -13,7 +13,7 @@ class CardServiceSpec extends AsyncFlatSpec with Matchers with AsyncMockFactory 
 
   "getUserCards" should "return cards from external service and put them to cache for fallback" in
     testEnvironment { env =>
-      import env._
+      import env.*
 
       externalService.getUserCards expects userId returning IO(cards)
       cards.foreach(card => cardMasking.mask expects card returning card)
@@ -24,7 +24,7 @@ class CardServiceSpec extends AsyncFlatSpec with Matchers with AsyncMockFactory 
 
   it should "not fail if external service is available but cache is not" in
     testEnvironment { env =>
-      import env._
+      import env.*
 
       externalService.getUserCards expects userId returning IO(cards)
       cards.foreach(card => cardMasking.mask expects card returning card)
@@ -37,7 +37,7 @@ class CardServiceSpec extends AsyncFlatSpec with Matchers with AsyncMockFactory 
 
   it should "return cards from fallback cache if external service is unavailable" in
     testEnvironment { env =>
-      import env._
+      import env.*
 
       externalService.getUserCards expects userId returning IO.raiseError(
         new RuntimeException("Database is unavailable")

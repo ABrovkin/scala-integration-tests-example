@@ -11,7 +11,7 @@ services:
       - "6379:6379"
 
   application:
-    image: scala-integration-tests:latest
+    image: cards-app:latest
     environment:
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"

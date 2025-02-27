@@ -1,6 +1,6 @@
 package com.abrovkin.service
 
-import com.abrovkin.testdata.CardsTestData._
+import com.abrovkin.testdata.CardsTestData.*
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 

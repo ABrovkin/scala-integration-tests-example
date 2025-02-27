@@ -1,7 +1,9 @@
 package com.abrovkin.http
 
-import cats.syntax.all.*
 import cats.Monad
+import cats.syntax.all.*
+import com.abrovkin.model.UserId
+import com.abrovkin.service.CardService
 import io.circe.Encoder
 import io.circe.generic.auto.*
 import io.circe.syntax.*
@@ -9,8 +11,6 @@ import org.http4s.HttpRoutes
 import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits.*
-import com.abrovkin.service.CardService
-import com.abrovkin.model.UserId
 
 trait CardsController[F[_]]:
   def routes: HttpRoutes[F]

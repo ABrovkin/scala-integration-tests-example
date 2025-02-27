@@ -1,7 +1,7 @@
 package com.abrovkin.model
 
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
+import io.circe.{Decoder, Encoder}
 
 object UserId:
   opaque type Id <: String = String

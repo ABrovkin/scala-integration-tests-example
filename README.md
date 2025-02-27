@@ -2,10 +2,14 @@
 
 Пример проекта с интеграционными тестами с использованием testcontainers на Scala.
 
-Локальный запуск:
+Локальная сборка:
 
 ```
-sbt docker:publishLocal
-docker compose up
+sbt clean compile test docker:publishLocal
+```
 
+Локальный запуск после сборки:
+
+```
+docker compose up
 ```

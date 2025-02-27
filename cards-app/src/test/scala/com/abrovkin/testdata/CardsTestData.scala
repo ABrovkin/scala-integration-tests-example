@@ -1,6 +1,5 @@
 package com.abrovkin.testdata
 
-import com.abrovkin.model.{Card, CardNumber, CardUcid, UserId}
 import com.abrovkin.model.*
 
 object CardsTestData:
