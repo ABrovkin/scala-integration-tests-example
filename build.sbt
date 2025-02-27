@@ -15,7 +15,7 @@ lazy val root = (project in file("."))
     publish / skip      := true,
     publishLocal / skip := true,
   )
-  .aggregate(`cards-app`)
+  .aggregate(`cards-app`, `cards-app-tests`)
 
 lazy val `cards-app` = (project in file("cards-app"))
   .settings(
@@ -50,3 +50,31 @@ lazy val `cards-app` = (project in file("cards-app"))
   )
   .settings(Defaults.itSettings)
   .enablePlugins(JavaAppPackaging)
+
+lazy val `cards-app-tests` = (project in file("cards-app-tests"))
+  .settings(
+    name                := "cards-app-tests",
+    scalaVersion        := "3.4.2",
+    publish / skip      := true,
+    publishLocal / skip := true,
+    libraryDependencies ++= List(
+      "org.typelevel"         %% "cats-core"                       % catsVersion,
+      "org.typelevel"         %% "cats-effect"                     % catsEffectVersion,
+      "dev.profunktor"        %% "redis4cats-effects"              % redis4catsVersion,
+      "dev.profunktor"        %% "redis4cats-log4cats"             % redis4catsVersion,
+      "io.circe"              %% "circe-core"                      % circeVersion,
+      "io.circe"              %% "circe-generic"                   % circeVersion,
+      "io.circe"              %% "circe-parser"                    % circeVersion,
+      "org.http4s"            %% "http4s-dsl"                      % http4sVersion,
+      "org.http4s"            %% "http4s-circe"                    % http4sVersion,
+      "org.http4s"            %% "http4s-blaze-client"             % http4sVersion,
+      "org.scalatest"         %% "scalatest"                       % scalaTestVersion            % Test,
+      "com.dimafeng"          %% "testcontainers-scala-scalatest"  % testcontainersVersion       % Test,
+      "com.dimafeng"          %% "testcontainers-scala-redis"      % testcontainersVersion       % Test,
+      "com.dimafeng"          %% "testcontainers-scala-mockserver" % testcontainersVersion       % Test,
+      "com.dimafeng"          %% "testcontainers-scala-toxiproxy"  % testcontainersVersion       % Test,
+      "org.typelevel"         %% "cats-effect-testing-scalatest"   % catsEffectTestingVersion    % Test,
+      "org.mock-server"        % "mockserver-client-java"          % mockServerJavaClientVersion % Test
+    )
+  )
+  .settings(Defaults.itSettings)
