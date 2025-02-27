@@ -10,13 +10,46 @@ services:
     ports:
       - "6379:6379"
 
+  mockserver:
+    image: mockserver/mockserver
+    container_name: mockserver
+    ports:
+      - "8082:1080"
+
+  toxiproxy:
+    image: shopify/toxiproxy
+    container_name: toxiproxy
+    depends_on:
+      - redis
+    ports:
+      - "8474:8474"
+      - "6380:6379"
+
+  toxiproxy-config:
+    image: shopify/toxiproxy
+    depends_on:
+      - toxiproxy
+    entrypoint: >
+      sh -c "/go/bin/toxiproxy-cli -h toxiproxy:8474 create redis-proxy --listen 0.0.0.0:6379 --upstream redis:6379"
+
   application:
     image: cards-app:latest
     environment:
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
-      EXTERNAL_SERVICE_URL: "http://localhost:8081"
+      EXTERNAL_SERVICE_URL: "http://mockserver:1080"
     ports:
       - "8080:8080"
     depends_on:
       - redis
+
+  application-with-toxiproxy:
+    image: cards-app:latest
+    environment:
+      REDIS_HOST: "toxiproxy"
+      REDIS_PORT: "6379"
+      EXTERNAL_SERVICE_URL: "http://mockserver:1080"
+    ports:
+      - "8081:8080"
+    depends_on:
+      - toxiproxy-config
