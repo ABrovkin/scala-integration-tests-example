@@ -3,7 +3,7 @@
 //import cats.effect.IO
 //import cats.effect.testing.scalatest.AsyncIOSpec
 //import cats.syntax.all.*
-//import com.abrovkin.cache.RedisConfig
+//import com.abrovkin.config.RedisConfig
 //import com.abrovkin.config.ServiceConfig
 //import com.abrovkin.config.ExternalServiceConfig
 //import com.abrovkin.model.{Card, UserId}

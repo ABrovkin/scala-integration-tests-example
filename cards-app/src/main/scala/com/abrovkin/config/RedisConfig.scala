@@ -1,4 +1,4 @@
-package com.abrovkin.cache
+package com.abrovkin.config
 
 import pureconfig.ConfigReader
 

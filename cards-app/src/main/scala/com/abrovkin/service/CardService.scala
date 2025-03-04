@@ -2,9 +2,10 @@ package com.abrovkin.service
 
 import cats.MonadThrow
 import cats.syntax.all.*
-import com.abrovkin.cache.CardsCache
 import com.abrovkin.model.{Card, UserId}
+import dev.profunktor.redis4cats.algebra.StringCommands
 import io.circe.parser.*
+import io.circe.syntax.*
 import org.http4s.client.Client
 import org.http4s.{EntityDecoder, Uri}
 
@@ -19,7 +20,7 @@ object CardService:
 
   private class Impl[F[_]: MonadThrow: StringDecoder](
       client: Client[F],
-      cache: CardsCache[F],
+      redisCommands: StringCommands[F, String, String],
       masking: CardMasking,
       baseUri: String
   ) extends CardService[F]:
@@ -32,16 +33,26 @@ object CardService:
                         .map(decode[List[Card]])
                         .map(_.getOrElse(List.empty))
         maskedCards = cards.map(masking.mask)
-        _          <- cache.putUserCards(userId, maskedCards).handleError(_ => ())
+        _          <- putUserCardsInternal(userId, maskedCards).handleError(_ => ())
       yield maskedCards
+
       getAndCacheCards
-        .handleErrorWith(_ => cache.getUserCards(userId))
+        .handleErrorWith(_ => getUserCardsInternal(userId))
         .handleError(_ => List.empty)
+
+    private def getUserCardsInternal(userId: UserId): F[List[Card]] =
+      redisCommands.get(userId).map {
+        case Some(value) => decode[List[Card]](value).getOrElse(List.empty)
+        case None        => List.empty
+      }
+
+    private def putUserCardsInternal(userId: UserId, cards: List[Card]): F[Unit] =
+      redisCommands.set(userId, cards.asJson.noSpaces)
 
   def apply[F[_]: MonadThrow: StringDecoder](
       externalService: Client[F],
-      cache: CardsCache[F],
+      redisCommands: StringCommands[F, String, String],
       masking: CardMasking,
       baseUri: String
   ): CardService[F] =
-    new Impl[F](externalService, cache, masking, baseUri)
+    new Impl[F](externalService, redisCommands, masking, baseUri)
