@@ -43,7 +43,7 @@ class CardServiceSpec extends AsyncFlatSpec with Matchers with AsyncMockFactory 
 
       cards.foreach(card => cardMasking.mask expects card returning card)
       (redis.set(_: String, _: String)) expects (userId, cards.asJson.noSpaces) returning IO.raiseError[Unit](
-        new RuntimeException("Cache is not available")
+        new RuntimeException("Redis is out")
       )
 
       service.getUserCards(userId).map(_ shouldBe cards)
@@ -54,12 +54,27 @@ class CardServiceSpec extends AsyncFlatSpec with Matchers with AsyncMockFactory 
       import env.*
 
       (client.expect(_: Uri)(_: EntityDecoder[IO, String])) expects (getCardsPath(userId), *) returning IO.raiseError(
-        new RuntimeException("Database is unavailable")
+        new RuntimeException("Error 500")
       )
 
       redis.get expects userId returning IO(Some(cards.asJson.noSpaces))
 
       service.getUserCards(userId).map(_ shouldBe cards)
+    }
+
+  it should "return an empty list if fallback cache and external service are unavailable" in
+    testEnvironment { env =>
+      import env.*
+
+      (client.expect(_: Uri)(_: EntityDecoder[IO, String])) expects (getCardsPath(userId), *) returning IO.raiseError(
+        new RuntimeException("Error 500")
+      )
+
+      redis.get expects userId returning IO.raiseError[Option[String]](
+        new RuntimeException("Redis is out")
+      )
+
+      service.getUserCards(userId).map(_ shouldBe List.empty)
     }
 
   def testEnvironment(f: TestEnvironment => IO[Unit]): IO[Unit] = f(new TestEnvironment {})
