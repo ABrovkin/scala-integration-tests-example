@@ -14,16 +14,18 @@ trait CardService[F[_]]:
 
 object CardService:
 
-  type StringDecoder[F[_]] = EntityDecoder[F, String]
+  private type StringDecoder[F[_]] = EntityDecoder[F, String]
+  private type Redis[F[_]]         = StringCommands[F, String, String]
 
-  def getCardsRelativePath(userId: String): String = s"/users/$userId/cards"
+  private def getCardsRelativePath(userId: String): String = s"/users/$userId/cards"
 
-  private class Impl[F[_]: MonadThrow: StringDecoder](
-      client: Client[F],
-      redisCommands: StringCommands[F, String, String],
+  private class Impl[F[_]: MonadThrow: StringDecoder: Client: Redis](
       masking: CardMasking,
       baseUri: String
   ) extends CardService[F]:
+
+    private val client = summon[Client[F]]
+    private val redis  = summon[Redis[F]]
 
     override def getUserCards(userId: UserId): F[List[Card]] =
       val uri              = Uri.unsafeFromString(s"$baseUri${getCardsRelativePath(userId)}")
@@ -41,13 +43,13 @@ object CardService:
         .handleError(_ => List.empty)
 
     private def getUserCardsInternal(userId: UserId): F[List[Card]] =
-      redisCommands.get(userId).map {
+      redis.get(userId).map {
         case Some(value) => decode[List[Card]](value).getOrElse(List.empty)
         case None        => List.empty
       }
 
     private def putUserCardsInternal(userId: UserId, cards: List[Card]): F[Unit] =
-      redisCommands.set(userId, cards.asJson.noSpaces)
+      redis.set(userId, cards.asJson.noSpaces)
 
   def apply[F[_]: MonadThrow: StringDecoder](
       externalService: Client[F],
@@ -55,4 +57,7 @@ object CardService:
       masking: CardMasking,
       baseUri: String
   ): CardService[F] =
-    new Impl[F](externalService, redisCommands, masking, baseUri)
+    given Client[F] = externalService
+    given Redis[F]  = redisCommands
+
+    new Impl[F](masking, baseUri)
