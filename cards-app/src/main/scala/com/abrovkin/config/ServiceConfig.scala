@@ -1,7 +1,6 @@
 package com.abrovkin.config
 
 import com.abrovkin.cache.RedisConfig
-import com.abrovkin.external.ExternalServiceConfig
 import pureconfig.ConfigReader
 
 case class ServiceConfig(

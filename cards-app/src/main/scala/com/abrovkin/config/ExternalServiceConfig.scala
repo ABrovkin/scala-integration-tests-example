@@ -1,4 +1,4 @@
-package com.abrovkin.external
+package com.abrovkin.config
 
 import pureconfig.ConfigReader
 

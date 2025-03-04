@@ -4,7 +4,6 @@ import cats.effect.{Async, Resource}
 import cats.syntax.all.*
 import com.abrovkin.cache.CardsCache
 import com.abrovkin.config.ServiceConfig
-import com.abrovkin.external.CardsExternalService
 import com.abrovkin.http.CardsController
 import com.abrovkin.service.{CardMaskingImpl, CardService}
 import dev.profunktor.redis4cats.data.RedisCodec
@@ -37,26 +36,15 @@ object ProgramWiring:
       .build()
     Redis[F].withOptions(redisUri, opts, RedisCodec.Utf8)
 
-  def wire[F[_]: Async](externalServiceUri: String, redisUri: String): Resource[F, CardService[F]] =
-    for
-      httpClient     <- BlazeClientBuilder[F].resource
-      externalService = CardsExternalService(httpClient, externalServiceUri)
-      redisCommands  <- redis(redisUri, 200)
-      cache           = CardsCache(redisCommands)
-      service         = CardService(externalService, cache, CardMaskingImpl)
-      controller      = CardsController(service)
-    yield service
-
   def buildController[F[_]: Async](config: ServiceConfig): Resource[F, HttpRoutes[F]] =
     for
-      httpClient     <- BlazeClientBuilder[F].resource
-      externalService = CardsExternalService(httpClient, config.externalServiceConfig.externalServiceUri)
-      redisUri        = s"redis://${config.redisConfig.redisHost}:${config.redisConfig.redisPort}"
-      redisCommands  <- redis(redisUri, config.redisConfig.timeout)
-      cache           = CardsCache(redisCommands)
-      service         = CardService(externalService, cache, CardMaskingImpl)
-      controller      = CardsController(service)
-      httpRoutes      = controller.routes
+      httpClient    <- BlazeClientBuilder[F].resource
+      redisUri       = s"redis://${config.redisConfig.redisHost}:${config.redisConfig.redisPort}"
+      redisCommands <- redis(redisUri, config.redisConfig.timeout)
+      cache          = CardsCache(redisCommands)
+      service        = CardService(httpClient, cache, CardMaskingImpl, config.externalServiceConfig.externalServiceUri)
+      controller     = CardsController(service)
+      httpRoutes     = controller.routes
     yield httpRoutes
 
   def buildApp[F[_]: Async](): Resource[F, ServerBuilder[F]] =
