@@ -17,8 +17,6 @@ object CardService:
   private type StringDecoder[F[_]] = EntityDecoder[F, String]
   private type Redis[F[_]]         = StringCommands[F, String, String]
 
-  private def getCardsRelativePath(userId: String): String = s"/users/$userId/cards"
-
   private class Impl[F[_]: MonadThrow: StringDecoder: Client: Redis](
       masking: CardMasking,
       baseUri: String
@@ -27,28 +25,30 @@ object CardService:
     private val client = summon[Client[F]]
     private val redis  = summon[Redis[F]]
 
+    private def getCardsPath(userId: String): Uri =
+      Uri.unsafeFromString(s"$baseUri/users/$userId/cards")
+
     override def getUserCards(userId: UserId): F[List[Card]] =
-      val uri              = Uri.unsafeFromString(s"$baseUri${getCardsRelativePath(userId)}")
       val getAndCacheCards = for
         cards      <- client
-                        .expect[String](uri)
+                        .expect[String](getCardsPath(userId))
                         .map(decode[List[Card]])
                         .map(_.getOrElse(List.empty))
         maskedCards = cards.map(masking.mask)
-        _          <- putUserCardsInternal(userId, maskedCards).handleError(_ => ())
+        _          <- putUserCardsToCache(userId, maskedCards).handleError(_ => ())
       yield maskedCards
 
       getAndCacheCards
-        .handleErrorWith(_ => getUserCardsInternal(userId))
+        .handleErrorWith(_ => getUserCardsFromCache(userId))
         .handleError(_ => List.empty)
 
-    private def getUserCardsInternal(userId: UserId): F[List[Card]] =
+    private def getUserCardsFromCache(userId: UserId): F[List[Card]] =
       redis.get(userId).map {
         case Some(value) => decode[List[Card]](value).getOrElse(List.empty)
         case None        => List.empty
       }
 
-    private def putUserCardsInternal(userId: UserId, cards: List[Card]): F[Unit] =
+    private def putUserCardsToCache(userId: UserId, cards: List[Card]): F[Unit] =
       redis.set(userId, cards.asJson.noSpaces)
 
   def apply[F[_]: MonadThrow: StringDecoder](
