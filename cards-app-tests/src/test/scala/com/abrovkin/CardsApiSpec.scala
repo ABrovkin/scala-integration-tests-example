@@ -20,7 +20,7 @@ import org.scalatest.matchers.should.Matchers
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class CardsServiceSpec extends AsyncFlatSpec with Matchers with TestContainersForAll with AsyncIOSpec:
+class CardsApiSpec extends AsyncFlatSpec with Matchers with TestContainersForAll with AsyncIOSpec:
 
   import CardsTestData.*
 
