@@ -4,7 +4,9 @@ import cats.MonadThrow
 import cats.effect.Temporal
 import cats.syntax.all.*
 import org.http4s.client.Client
-import org.http4s.{EntityDecoder, Uri}
+import org.http4s.{EntityDecoder, MediaType, Request, Uri}
+import org.http4s.headers.*
+import org.http4s.Method.*
 
 import java.net.SocketException
 import scala.concurrent.duration.*
@@ -31,8 +33,10 @@ object CardsAppClient:
       // Простой retry позволяет снизить хрупкость тестов
       // По-хорошему это должно быть реализовано через стратегию ожидания старта контейнеров
       def retries(attempts: Int): F[String] =
+        val request = Request[F](method = GET, uri = getCardsUri(userId))
+          .withHeaders(Accept(MediaType.application.json))
         client
-          .expect[String](getCardsUri(userId))
+          .expect[String](request)
           .handleErrorWith {
             case _: SocketException if attempts > 0 =>
               Temporal[F]
