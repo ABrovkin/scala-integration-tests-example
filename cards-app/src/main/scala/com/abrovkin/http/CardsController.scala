@@ -2,9 +2,8 @@ package com.abrovkin.http
 
 import cats.effect.kernel.Async
 import cats.syntax.all.*
-import com.abrovkin.model.{UserId, CardUcid, CardNumber, Card}
+import com.abrovkin.model.{Card, CardNumber, CardUcid, UserId}
 import com.abrovkin.service.CardService
-import io.circe.generic.auto.*
 import org.http4s.HttpRoutes
 import sttp.tapir.*
 import sttp.tapir.generic.auto.*
@@ -25,11 +24,11 @@ object CardsController:
     given Schema[CardNumber] = Schema.schemaForString.as[CardNumber]
 
     // Define the endpoint using tapir
-    private val getUserCardsEndpoint: PublicEndpoint[String, Unit, List[com.abrovkin.model.Card], Any] =
+    private val getUserCardsEndpoint: PublicEndpoint[String, Unit, List[Card], Any] =
       endpoint.get
         .in("api" / "v1" / "cards")
         .in(query[String]("userId"))
-        .out(jsonBody[List[com.abrovkin.model.Card]])
+        .out(jsonBody[List[Card]])
         .description("Get user cards by user ID")
         .name("getUserCards")
 
@@ -53,6 +52,6 @@ object CardsController:
       Http4sServerInterpreter[F]().toRoutes(swaggerEndpoints)
     }
 
-    override def routes: HttpRoutes[F] = swaggerRoutes <+> getUserCardsRoute
+    override def routes: HttpRoutes[F] = getUserCardsRoute <+> swaggerRoutes
 
   def apply[F[_]: Async](cardService: CardService[F]): CardsController[F] = new Impl[F](cardService)
