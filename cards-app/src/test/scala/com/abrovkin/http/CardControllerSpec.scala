@@ -20,6 +20,7 @@ import org.http4s.*
 import org.http4s.Method.*
 import org.http4s.client.Client
 import org.http4s.client.dsl.io.*
+import org.http4s.headers.*
 import org.http4s.implicits.*
 import org.http4s.syntax.all.*
 import org.scalatest.flatspec.AsyncFlatSpec
@@ -74,6 +75,7 @@ class CardControllerSpec extends AsyncFlatSpec with Matchers with TestContainers
 
   def assertCardsRequest(client: Client[IO], userId: UserId, expectedResult: List[Card]): IO[Unit] =
     val request = GET(Uri.unsafeFromString(s"/api/v1/cards?userId=$userId"))
+      .withHeaders(Accept(MediaType.application.json))
     client.expect[String](request).map(_ shouldBe expectedResult.asJson.noSpaces)
 
   def assertCachedResponse(
