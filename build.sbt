@@ -10,6 +10,7 @@ val catsEffectTestingVersion    = "1.5.0"
 val mockServerJavaClientVersion = "5.15.0"
 val toxiproxyJavaClientVersion  = "2.1.7"
 val pureConfigVersion           = "0.17.8"
+val tapirVersion                = "1.9.0"
 
 lazy val root = (project in file("."))
   .settings(
@@ -36,6 +37,9 @@ lazy val `cards-app` = (project in file("cards-app"))
       "org.http4s"            %% "http4s-blaze-server"             % http4sVersion,
       "com.github.pureconfig" %% "pureconfig-core"                 % pureConfigVersion,
       "com.github.pureconfig" %% "pureconfig-cats-effect"          % pureConfigVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"       % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe"          % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle"   % tapirVersion,
       "org.scalatest"         %% "scalatest"                       % scalaTestVersion            % Test,
       "org.scalamock"         %% "scalamock"                       % scalaMockVersion            % Test,
       "com.dimafeng"          %% "testcontainers-scala-scalatest"  % testcontainersVersion       % Test,
