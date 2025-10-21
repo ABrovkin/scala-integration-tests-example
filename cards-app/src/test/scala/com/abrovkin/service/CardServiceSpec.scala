@@ -1,6 +1,5 @@
 package com.abrovkin.service
 
-import cats.data.NonEmptyList
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import com.abrovkin.model.UserId
@@ -13,9 +12,6 @@ import org.http4s.{EntityDecoder, Uri}
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
-
-import java.time.Instant
-import scala.concurrent.duration.{Duration, FiniteDuration}
 
 class CardServiceSpec extends AsyncFlatSpec with Matchers with AsyncMockFactory with AsyncIOSpec:
 
